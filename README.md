@@ -95,8 +95,8 @@ data/
 │   │   └── labels/sem_seg/masks/val/   # c-19
 │   │
 │   ├── bdd_inpaint41/
-│   │   ├── images/                 # 1,000
-│   │   └── labels/                 # c-41
+│       ├── images/                 # 1,000
+│       └── labels/                 # c-41
 │   
 │
 ├── ACDC/
