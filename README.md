@@ -1,4 +1,4 @@
-# ✨ S²-Corr: State-Space Correlation Refinement for Open-Vocabulary Domain Generalization
+# ✨ S²-Corr
 
 <p align="center">
   <img src="https://img.shields.io/badge/PyTorch-1.13.1-ee4c2c?logo=pytorch&logoColor=white" />
