@@ -88,7 +88,6 @@ Please download the two files `images.zip` (≈ 9.87 GB) and `sem_seg_labels.zip
 and extract them to `data/ROADWork_Data`.
 
 ---
-
 ### 🔧 Conversion Scripts
 
 ####  7- & 19-Class Format
