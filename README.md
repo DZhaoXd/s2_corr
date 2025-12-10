@@ -51,64 +51,75 @@ pip install -e .
 
 ## 📁 Dataset Preparation
 
-Folder structure under `data/` should look like:
-
-```
-data/
-  GTA5/
-    images/
-    labels_7/
-    labels_19/
-
-  cityscapes/
-    leftImg8bit/
-    gtFine_7/
-    gtFine_19/
-
-  ACDC/
-    rgb_anon/train/
-    gt/train/
-
-  BDD/
-    bdd100k/
-
-  bdd_inpaint41/
-    images/
-    labels/
-
-  ACDC_inpaint41/
-    images/
-    labels/
-
-  mapillary/
-    val/
-    OV_30/
-
-  ROADWork_Data/
-    images/
-    gtFine_10/
-```
-
 ### 🔧 Conversion Scripts
 
-#### → 19-Class Format
+####  7- & 19-Class Format
 
 ```bash
 python tools/convert_datasets_to19/gta.py data/gta
 python tools/convert_datasets_to19/cityscapes.py data/cityscapes
 python tools/convert_datasets_to19/mapillary.py data/mapillary
-```
-
-#### → Open-Vocabulary (7 / 30 / 41 / 58)
-
-```bash
 python tools/convert_datasets_ovss/prepare_cityscapes_seen_7.py
 python tools/convert_datasets_ovss/process_GTA_19_to_7.py
-python cp_Mapi_training.py
+```
+
+####  large-Vocabulary (7 / 30 / 41 / 58)
+
+```bash
+python cp_Mapi_training.py   # merge train set and val set 
 python tools/convert_datasets_ovss/process_Mapi_65.py
 python tools/convert_datasets_ovss/process_RW_10.py
 ```
 
+
+Folder structure under `data/` should look like:
+```
+data/
+├── GTA5/
+│   └── GTAV/
+│       ├── images/                 # 24,999
+│       ├── labels_7/               # c-7
+│       └── labels_19/              # c-19
+│
+├── cityscape/
+│   ├── leftImg8bit/
+│   │   └── train/                  # 2,899
+│   ├── gtFine_7/
+│   │   └── train/                  # c-7
+│   └── gtFine_19/
+│       └── train/                  # c-19
+│
+├── BDD/
+│   ├── bdd100k/
+│   │   ├── images/10k/val/         # 1,000
+│   │   └── labels/sem_seg/masks/val/   # c-19
+│   │
+│   ├── bdd_inpaint41/
+│   │   ├── images/                 # 1,000
+│   │   └── labels/                 # c-41
+│   │
+│   └── ACDC_inpaint41/
+│       ├── images/                 # 1,000
+│       └── labels/                 # c-41
+│
+├── ACDC/
+│   ├── rgb_anon/train/             # 1,600 (c-19)
+│   └── gt/train/                   # c-19
+│
+├── mapillary/
+│   ├── val/
+│   │   ├── images/                 # 2,000
+│   │   └── labels_TrainIds/        # c-19
+│   │
+│   └── OV_30/
+│       ├── images/                 # 3,943
+│       └── labels/                 # c-30
+│
+└── ROADWork_Data/
+    ├── images/                     # 2,098
+    └── gtFine_10/                  # c-10
+
+```
 ---
 
 ## 🧠 Pretrained EVA-CLIP Models
