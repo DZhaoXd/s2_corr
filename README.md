@@ -10,7 +10,7 @@
 **Official implementation of**
  *S²-Corr: State-Space Correlation Refinement for Open-Vocabulary Domain Generalization in Semantic Segmentation*
 
-S²-Corr introduces a **state-space powered correlation refinement module** that stabilizes text–image alignment under domain shift, achieving SOTA performance on both **Real-to-Real** and **Synthetic-to-Real** OVDG-SS settings.
+S²-Corr introduces a state-space powered correlation refinement module that stabilizes text–image alignment under domain shift, achieving SOTA performance on both Real-to-Real and Synthetic-to-Real OVDG-SS settings.
 
 ---
 
@@ -71,8 +71,14 @@ data/
 
   BDD/
     bdd100k/
-    bdd_inpaint41/
-    ACDC_inpaint41/
+
+  bdd_inpaint41/
+    images/
+    labels/
+
+  ACDC_inpaint41/
+    images/
+    labels/
 
   mapillary/
     val/
@@ -114,14 +120,14 @@ Download EVA-CLIP weights from:
 Place under:
 
 ```
-DeCLIP/checkpoints/
+Pretrain/
   EVA02_CLIP_B_psz16_s8B.pt
   EVA02_CLIP_L_336_psz14_s6B.pt
 ```
 
 ---
 
-## 🏋️ Training
+## Training
 
 Training script format:
 
