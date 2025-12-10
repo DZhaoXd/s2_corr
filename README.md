@@ -97,14 +97,16 @@ data/
 │   ├── bdd_inpaint41/
 │   │   ├── images/                 # 1,000
 │   │   └── labels/                 # c-41
+│   
+│
+├── ACDC/
+│   ├── rgb_anon/train/             # 1,600 (c-19)
+│   └── gt/train/                   # c-19
 │   │
 │   └── ACDC_inpaint41/
 │       ├── images/                 # 1,000
 │       └── labels/                 # c-41
 │
-├── ACDC/
-│   ├── rgb_anon/train/             # 1,600 (c-19)
-│   └── gt/train/                   # c-19
 │
 ├── mapillary/
 │   ├── val/
