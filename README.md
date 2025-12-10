@@ -53,6 +53,42 @@ pip install -e .
 
 ## 📁 Dataset Preparation
 
+## 📥 Dataset Download
+
+**Cityscapes**  
+Please download `leftImg8bit_trainvaltest.zip` and `gt_trainvaltest.zip` from  
+[here](https://www.cityscapes-dataset.com/downloads/)  
+and extract them to `data/cityscapes`.
+
+**GTA5**  
+Please download all GTA5 image and label packages from  
+[here](https://download.visinf.tu-darmstadt.de/data/from_games/)  
+and extract them to `data/GTA5/GTAV`.
+
+**ACDC**  
+Please download `rgb_anon_trainvaltest.zip` and `gt_trainval.zip` from  
+[here](https://acdc.vision.ee.ethz.ch/download)  
+and extract them to `data/ACDC`.  
+Then restructure the folders from the original `condition/split/sequence/` layout  
+into a flat `split/` layout (e.g., `rgb_anon/train/`, `gt/train/`).
+
+**BDD100K**  
+Please download **10K Images** and **Segmentation** from  
+[here](https://bdd-data.berkeley.edu/portal.html#download)  
+and extract them to `data/BDD/bdd100k`.
+
+**Mapillary**  
+Please download `mapillary-vistas-dataset_public_v1.2.zip` from  
+[here](https://www.mapillary.com/dataset/vistas)  
+and extract it to `data/mapillary`.
+
+**ROADWork_Data**  
+Please download the two files `images.zip` (≈ 9.87 GB) and `sem_seg_labels.zip` (≈ 187 MB) from  
+[here](https://kilthub.cmu.edu/articles/dataset/ROADWork_Data/26093197)  
+and extract them to `data/ROADWork_Data`.
+
+---
+
 ### 🔧 Conversion Scripts
 
 ####  7- & 19-Class Format
