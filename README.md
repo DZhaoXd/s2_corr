@@ -1,4 +1,4 @@
-# ✨ S²-Corr
+# ✨ 
 
 <p align="center">
   <img src="https://img.shields.io/badge/PyTorch-1.13.1-ee4c2c?logo=pytorch&logoColor=white" />
@@ -7,27 +7,7 @@
   <img src="https://img.shields.io/badge/Model-EVA--CLIP-green?logo=openai" />
 </p>
 
-**Official implementation of**
- *S²-Corr: State-Space Correlation Refinement for Open-Vocabulary Domain Generalization in Semantic Segmentation*
 
-S²-Corr introduces a state-space powered correlation refinement module that stabilizes text–image alignment under domain shift, achieving SOTA performance on both Real-to-Real and Synthetic-to-Real OVDG-SS settings.
-
----
-
-## 🚀 Features
-
-* 🧩 **State-Space Correlation Aggregation**
-  Robust long-range correlation modeling via scan-based state passing.
-
-* 🔍 **Open-Vocabulary Semantic Segmentation**
-  Compatible with EVA-CLIP text/image encoders.
-
-* 🌍 **Domain Generalization**
-  Train on CS-7 / GTA-7 → test on ACDC / BDD / Mapillary / ROADWork.
-
-* 🎯 **Supports Multiple Category Spaces** (7 / 19 / 30 / 41 / 58 classes)
-
----
 
 ## 📦 Installation
 
