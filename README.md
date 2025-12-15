@@ -102,13 +102,13 @@ Folder structure under `data/` should look like:
 data/
 ├── GTA5/
 │   └── GTAV/
-│       ├── images/                 # 24,999
+│       ├── images/                 # 24966
 │       ├── labels_7/               # c-7
 │       └── labels_19/              # c-19
 │
 ├── cityscape/
 │   ├── leftImg8bit/
-│   │   └── train/                  # 2,899
+│   │   └── train/                  # 2,975
 │   ├── gtFine_7/
 │   │   └── train/                  # c-7
 │   └── gtFine_19/
