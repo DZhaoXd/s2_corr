@@ -1,4 +1,4 @@
-# ✨ S²-Corr: Open-Vocabulary Domain Generalization in Urban-Scene Segmentation
+# ✨ Open-Vocabulary Domain Generalization in Urban-Scene Segmentation
 
 <p align="center">
   <img src="https://img.shields.io/badge/PyTorch-1.13.1-ee4c2c?logo=pytorch&logoColor=white" />
@@ -7,8 +7,10 @@
   <img src="https://img.shields.io/badge/Model-EVA--CLIP-green?logo=openai" />
 </p>
 
+🎉🎉🎉  Our work has been accepted to CVPR 2026  (2026-02-21)
+
 **Official implementation of**
-📘 *S²-Corr: Open-Vocabulary Domain Generalization in Urban-Scene Segmentation*
+📘 *Open-Vocabulary Domain Generalization in Urban-Scene Segmentation*
 
 S²-Corr introduces a state-space powered correlation refinement module that stabilizes text–image alignment under domain shift, achieving SOTA performance on both Real-to-Real and Synthetic-to-Real OVDG-SS settings.
 
