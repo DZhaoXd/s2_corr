@@ -241,9 +241,14 @@ CUDA_VISIBLE_DEVICES=0 nohup sh demo/vis_atten.sh configs/cs7_catseg.yaml 1 outp
 ## 📚 Citation
 
 ```bibtex
-@article{zhao2026s2corr,
-  title={S²-Corr: State-Space Correlation Refinement for Open-Vocabulary Domain Generalization},
-  year={2026}
+@misc{zhao2026OVDG,
+      title={Open-Vocabulary Domain Generalization in Urban-Scene Segmentation}, 
+      author={Dong Zhao and Qi Zang and Nan Pu and Wenjing Li and Nicu Sebe and Zhun Zhong},
+      year={2026},
+      eprint={2602.18853},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV},
+      url={https://arxiv.org/abs/2602.18853}, 
 }
 ```
 
