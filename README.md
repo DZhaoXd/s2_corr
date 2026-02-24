@@ -1,6 +1,9 @@
 # ✨ Open-Vocabulary Domain Generalization in Urban-Scene Segmentation
 
 <p align="center">
+  <a href="https://arxiv.org/pdf/2602.18853">
+    <img src="https://img.shields.io/badge/Paper-arXiv-<COLOR>.svg?logo=arxiv" />
+  </a>
   <img src="https://img.shields.io/badge/PyTorch-1.13.1-ee4c2c?logo=pytorch&logoColor=white" />
   <img src="https://img.shields.io/badge/CUDA-11.7-76b900?logo=nvidia&logoColor=white" />
   <img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" />
