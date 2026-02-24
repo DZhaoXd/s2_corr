@@ -10,12 +10,15 @@
 
 🎉🎉🎉  Our work has been accepted to CVPR 2026  (2026-02-21)
 
-**Official implementation of**
-📘 *Open-Vocabulary Domain Generalization in Urban-Scene Segmentation*
+
+<p align="center">
+  <img src="figs/Fig1_task_intro.png" width="95%">
+</p>
+
+
 
 S²-Corr introduces a state-space powered correlation refinement module that stabilizes text–image alignment under domain shift, achieving SOTA performance on both Real-to-Real and Synthetic-to-Real OVDG-SS settings.
 
----
 
 ## 🚀 Features
 
