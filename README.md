@@ -49,7 +49,7 @@ cd s2_corr
 ### 2. Create Conda Environment
 
 ```bash
-conda create -n S2_Corr python=3.8
+conda create -n S2_Corr python=3.10
 conda activate S2_Corr
 pip install torch==2.0.0 torchvision==0.15.1 torchaudio==2.0.1
 pip install -r requirements.txt
