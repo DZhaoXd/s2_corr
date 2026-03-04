@@ -71,8 +71,12 @@ Please download all GTA5 image and label packages from [here](https://download.v
 Please download `rgb_anon_trainvaltest.zip` and `gt_trainval.zip` from [here](https://acdc.vision.ee.ethz.ch/download)  and extract them to `data/ACDC`.  
 Then restructure the folders from the original `condition/split/sequence/` layout  into a flat `split/` layout (e.g., `rgb_anon/train/`, `gt/train/`).
 
+Please download the ACDC Inpaint data (1000 inpainted image pairs) using the Stable Diffusion model from [here](https://drive.google.com/file/d/1jVY-X8GWC-URZYkuGIj6gmcisuCTCAHC/view?usp=drive_link) and extract them to `data/ACDC/ACDC_inpaint41`.
+
 **BDD100K**  
 Please download **10K Images** and **Segmentation** from [here](https://bdd-data.berkeley.edu/portal.html#download) and extract them to `data/BDD/bdd100k`.
+
+Please download the BDD100K Inpaint data (1000 inpainted image pairs) using the Stable Diffusion model from [here](https://drive.google.com/file/d/1qmpytXWqq2nYYTKDjyT5eovNWpxKaiHK/view?usp=drive_link) and extract them to `data/BDD/bdd_inpaint41`.
 
 **Mapillary**  
 Please download `mapillary-vistas-dataset_public_v1.2.zip` from [here](https://www.mapillary.com/dataset/vistas)  and extract it to `data/mapillary`.
