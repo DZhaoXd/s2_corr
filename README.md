@@ -102,8 +102,9 @@ python tools/convert_datasets_ovss/process_GTA_19_to_7.py
 
 ```bash
 python cp_Mapi_training.py   # merge train set and val set 
-python tools/convert_datasets_ovss/process_Mapi_65.py
-python tools/convert_datasets_ovss/process_RW_10.py
+python tools/process_Mapi_65.py
+python tools/cp_Mapi_training.py
+python tools/process_RW_10.py
 ```
 
 
