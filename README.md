@@ -100,10 +100,9 @@ python tools/convert_datasets_ovss/process_GTA_19_to_7.py
 
 ####  large-Vocabulary (30 / 41 / 58 / 10)
 
-```bash
-python cp_Mapi_training.py   # merge train set and val set 
-python tools/process_Mapi_65.py
-python tools/cp_Mapi_training.py
+```bash 
+python tools/process_Mapi_65.py  # 
+python tools/cp_Mapi_training.py # merge train set and val set 
 python tools/process_RW_10.py
 ```
 
