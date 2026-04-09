@@ -8,6 +8,7 @@
   <img src="https://img.shields.io/badge/Model-EVA--CLIP-green?logo=openai" />
 </p>
 
+🎉🎉🎉 (2026-04-09) Our work has been selected as Highlight.
 🎉🎉🎉 (2026-02-21) Our work has been accepted to CVPR 2026, Final reviewer scores: 6 (Acc) / 5 (Weak Acc) / 5 (Weak Acc).
 
 
