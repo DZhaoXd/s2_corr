@@ -1,4 +1,4 @@
-# ✨ Open-Vocabulary Domain Generalization in Urban-Scene Segmentation
+# ✨ [CVPR26-highlight] Open-Vocabulary Domain Generalization in Urban-Scene Segmentation
 
 <p align="center">
   <a href="https://arxiv.org/pdf/2602.18853">
