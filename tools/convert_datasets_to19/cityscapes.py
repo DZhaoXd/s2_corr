@@ -10,26 +10,40 @@
 import argparse
 import json
 import os.path as osp
+from functools import partial
+from multiprocessing import Pool
+from pathlib import Path
 
-import mmcv
 import numpy as np
-from cityscapesscripts.preparation.json2labelImg import json2labelImg
 from PIL import Image
+from tqdm import tqdm
 
 
-def convert_json_to_label(json_file):
-    label_file = json_file.replace('_polygons.json', '_labelTrainIds.png')
-    json2labelImg(json_file, label_file, 'trainIds')
+def convert_json_to_label(json_file, gt_dir, out_gt_dir):
+    try:
+        from cityscapesscripts.preparation.json2labelImg import json2labelImg
+    except ImportError as exc:
+        raise ImportError(
+            "cityscapesscripts is required for Cityscapes polygon conversion. "
+            "Install it with `pip install cityscapesscripts`."
+        ) from exc
 
-    if 'train/' in json_file:
-        pil_label = Image.open(label_file)
+    rel_file = Path(json_file).relative_to(gt_dir)
+    label_rel = Path(str(rel_file).replace('_polygons.json',
+                                           '_labelTrainIds.png'))
+    label_file = Path(out_gt_dir) / label_rel
+    label_file.parent.mkdir(parents=True, exist_ok=True)
+    json2labelImg(json_file, str(label_file), 'trainIds')
+
+    if 'train' in label_rel.parts:
+        pil_label = Image.open(str(label_file))
         label = np.asarray(pil_label)
         sample_class_stats = {}
         for c in range(19):
             n = int(np.sum(label == c))
             if n > 0:
                 sample_class_stats[int(c)] = n
-        sample_class_stats['file'] = label_file
+        sample_class_stats['file'] = str(label_file)
         return sample_class_stats
     else:
         return None
@@ -40,6 +54,7 @@ def parse_args():
         description='Convert Cityscapes annotations to TrainIds')
     parser.add_argument('cityscapes_path', help='cityscapes data path')
     parser.add_argument('--gt-dir', default='gtFine', type=str)
+    parser.add_argument('--gt19-dir', default='gtFine_19', type=str)
     parser.add_argument('-o', '--out-dir', help='output path')
     parser.add_argument(
         '--nproc', default=1, type=int, help='number of process')
@@ -48,7 +63,8 @@ def parse_args():
 
 
 def save_class_stats(out_dir, sample_class_stats):
-    sample_class_stats = [e for e in sample_class_stats if e is not None]
+    sample_class_stats = [dict(e) for e in sample_class_stats
+                          if e is not None]
     with open(osp.join(out_dir, 'sample_class_stats.json'), 'w') as of:
         json.dump(sample_class_stats, of, indent=2)
 
@@ -70,27 +86,48 @@ def save_class_stats(out_dir, sample_class_stats):
         json.dump(samples_with_class, of, indent=2)
 
 
+def track_progress(func, files, nproc):
+    if nproc > 1:
+        with Pool(nproc) as pool:
+            return list(tqdm(pool.imap(func, files), total=len(files)))
+    return [func(file) for file in tqdm(files)]
+
+
+def resolve_cityscapes_root(cityscapes_path):
+    """Resolve common Cityscapes layouts to the directory with gtFine."""
+    path = Path(cityscapes_path)
+    candidates = [
+        path,
+        path / 'Cityscapes',
+        path / 'cityscapes' / 'Cityscapes',
+        path.parent / 'cityscape',
+        path.parent / 'cityscape' / 'cityscapes' / 'Cityscapes',
+    ]
+    for candidate in candidates:
+        if (candidate / 'gtFine').is_dir():
+            return candidate
+    return path
+
+
 def main():
     args = parse_args()
-    cityscapes_path = args.cityscapes_path
-    out_dir = args.out_dir if args.out_dir else cityscapes_path
-    mmcv.mkdir_or_exist(out_dir)
+    cityscapes_path = resolve_cityscapes_root(args.cityscapes_path)
+    out_dir = Path(args.out_dir) if args.out_dir else cityscapes_path
+    out_dir.mkdir(parents=True, exist_ok=True)
 
-    gt_dir = osp.join(cityscapes_path, args.gt_dir)
+    gt_dir = cityscapes_path / args.gt_dir
+    out_gt_dir = out_dir / args.gt19_dir
+    out_gt_dir.mkdir(parents=True, exist_ok=True)
 
-    poly_files = []
-    for poly in mmcv.scandir(gt_dir, '_polygons.json', recursive=True):
-        poly_file = osp.join(gt_dir, poly)
-        poly_files.append(poly_file)
+    poly_files = [str(p) for p in gt_dir.rglob('*_polygons.json')]
+    if not poly_files:
+        raise FileNotFoundError(f'No Cityscapes polygon JSON files found in {gt_dir}')
 
     only_postprocessing = False
+    worker = partial(convert_json_to_label, gt_dir=gt_dir,
+                     out_gt_dir=out_gt_dir)
     if not only_postprocessing:
-        if args.nproc > 1:
-            sample_class_stats = mmcv.track_parallel_progress(
-                convert_json_to_label, poly_files, args.nproc)
-        else:
-            sample_class_stats = mmcv.track_progress(convert_json_to_label,
-                                                     poly_files)
+        sample_class_stats = track_progress(worker, poly_files, args.nproc)
     else:
         with open(osp.join(out_dir, 'sample_class_stats.json'), 'r') as of:
             sample_class_stats = json.load(of)
@@ -101,10 +138,14 @@ def main():
 
     for split in split_names:
         filenames = []
-        for poly in mmcv.scandir(
-                osp.join(gt_dir, split), '_polygons.json', recursive=True):
-            filenames.append(poly.replace('_gtFine_polygons.json', ''))
-        with open(osp.join(out_dir, f'{split}.txt'), 'w') as f:
+        split_dir = gt_dir / split
+        if not split_dir.is_dir():
+            continue
+        for poly in split_dir.rglob('*_polygons.json'):
+            filenames.append(
+                str(poly.relative_to(split_dir)).replace(
+                    '_gtFine_polygons.json', ''))
+        with open(out_dir / f'{split}.txt', 'w') as f:
             f.writelines(f + '\n' for f in filenames)
 
 

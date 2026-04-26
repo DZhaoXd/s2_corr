@@ -7,13 +7,16 @@
 import argparse
 import json
 import os.path as osp
+from functools import partial
+from multiprocessing import Pool
+from pathlib import Path
 
-import mmcv
 import numpy as np
 from PIL import Image
+from tqdm import tqdm
 
 
-def convert_to_train_id(file):
+def convert_to_train_id(file, gt_dir, out_label_dir):
     # re-assign labels to match the format of Cityscapes
     pil_label = Image.open(file)
     label = np.asarray(pil_label)
@@ -46,10 +49,11 @@ def convert_to_train_id(file):
         n = int(np.sum(k_mask))
         if n > 0:
             sample_class_stats[v] = n
-    new_file = file.replace('.png', '_labelTrainIds.png')
-    assert file != new_file
-    sample_class_stats['file'] = new_file
-    Image.fromarray(label_copy, mode='L').save(new_file)
+    rel_file = Path(file).relative_to(gt_dir)
+    new_file = Path(out_label_dir) / rel_file
+    new_file.parent.mkdir(parents=True, exist_ok=True)
+    sample_class_stats['file'] = str(new_file)
+    Image.fromarray(label_copy, mode='L').save(str(new_file))
     return sample_class_stats
 
 
@@ -58,6 +62,7 @@ def parse_args():
         description='Convert GTA annotations to TrainIds')
     parser.add_argument('gta_path', help='gta data path')
     parser.add_argument('--gt-dir', default='labels', type=str)
+    parser.add_argument('--label19-dir', default='labels_19', type=str)
     parser.add_argument('-o', '--out-dir', help='output path')
     parser.add_argument(
         '--nproc', default=4, type=int, help='number of process')
@@ -66,6 +71,7 @@ def parse_args():
 
 
 def save_class_stats(out_dir, sample_class_stats):
+    sample_class_stats = [dict(e) for e in sample_class_stats]
     with open(osp.join(out_dir, 'sample_class_stats.json'), 'w') as of:
         json.dump(sample_class_stats, of, indent=2)
 
@@ -87,30 +93,51 @@ def save_class_stats(out_dir, sample_class_stats):
         json.dump(samples_with_class, of, indent=2)
 
 
+def track_progress(func, files, nproc):
+    if nproc > 1:
+        with Pool(nproc) as pool:
+            return list(tqdm(pool.imap(func, files), total=len(files)))
+    return [func(file) for file in tqdm(files)]
+
+
+def resolve_gta_root(gta_path):
+    """Resolve common GTA5 layouts to the GTAV directory."""
+    path = Path(gta_path)
+    candidates = [
+        path,
+        path / 'GTAV',
+        path / 'GTA5' / 'GTAV',
+        path.parent / 'GTA5' / 'GTAV',
+    ]
+    for candidate in candidates:
+        if (candidate / 'labels').is_dir():
+            return candidate
+    return path
+
+
 def main():
     args = parse_args()
-    gta_path = args.gta_path
-    out_dir = args.out_dir if args.out_dir else gta_path
-    mmcv.mkdir_or_exist(out_dir)
+    gta_path = resolve_gta_root(args.gta_path)
+    out_dir = Path(args.out_dir) if args.out_dir else gta_path
+    out_dir.mkdir(parents=True, exist_ok=True)
 
-    gt_dir = osp.join(gta_path, args.gt_dir)
+    gt_dir = gta_path / args.gt_dir
+    out_label_dir = out_dir / args.label19_dir
+    out_label_dir.mkdir(parents=True, exist_ok=True)
 
-    poly_files = []
-    for poly in mmcv.scandir(
-            gt_dir, suffix=tuple(f'{i}.png' for i in range(10)),
-            recursive=True):
-        poly_file = osp.join(gt_dir, poly)
-        poly_files.append(poly_file)
+    poly_files = [
+        str(p) for p in gt_dir.rglob('*.png')
+        if p.name[-5:-4].isdigit()
+    ]
     poly_files = sorted(poly_files)
+    if not poly_files:
+        raise FileNotFoundError(f'No GTA label PNG files found in {gt_dir}')
 
     only_postprocessing = False
+    worker = partial(
+        convert_to_train_id, gt_dir=gt_dir, out_label_dir=out_label_dir)
     if not only_postprocessing:
-        if args.nproc > 1:
-            sample_class_stats = mmcv.track_parallel_progress(
-                convert_to_train_id, poly_files, args.nproc)
-        else:
-            sample_class_stats = mmcv.track_progress(convert_to_train_id,
-                                                     poly_files)
+        sample_class_stats = track_progress(worker, poly_files, args.nproc)
     else:
         with open(osp.join(out_dir, 'sample_class_stats.json'), 'r') as of:
             sample_class_stats = json.load(of)

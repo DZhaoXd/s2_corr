@@ -95,11 +95,11 @@ and extract them to `data/ROADWork_Data`.
 ####  7- & 19-Class Format
 
 ```bash
-python tools/convert_datasets_to19/gta.py data/gta
-python tools/convert_datasets_to19/cityscapes.py data/cityscapes
+python tools/convert_datasets_to19/gta.py data/GTA5/GTAV
+python tools/convert_datasets_to19/cityscapes.py data/cityscape
 python tools/convert_datasets_to19/mapillary.py data/mapillary
-python tools/convert_datasets_ovss/prepare_cityscapes_seen_7.py
-python tools/convert_datasets_ovss/process_GTA_19_to_7.py
+python tools/convert_datasets_ovss/prepare_cityscapes_seen_7.py data/cityscape
+python tools/convert_datasets_ovss/process_GTA_19_to_7.py data/GTA5/GTAV
 ```
 
 ####  large-Vocabulary (30 / 41 / 58 / 10)
@@ -269,4 +269,3 @@ CUDA_VISIBLE_DEVICES=0 nohup sh demo/vis_atten.sh configs/cs7_catseg.yaml 1 outp
 ## ❤️ Acknowledgements
 
 This project builds upon CAT-Seg
-
