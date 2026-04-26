@@ -105,8 +105,8 @@ python tools/convert_datasets_ovss/process_GTA_19_to_7.py data/GTA5/GTAV
 ####  large-Vocabulary (30 / 41 / 58 / 10)
 
 ```bash 
-python tools/process_Mapi_65.py  # 
-python tools/cp_Mapi_training.py # merge train set and val set 
+python tools/process_Mapi_65.py data/mapillary
+python tools/cp_Mapi_training.py data/mapillary
 python tools/process_RW_10.py
 ```
 
@@ -148,9 +148,15 @@ data/
 │
 │
 ├── mapillary/
+│   ├── training/
+│   │   ├── images/
+│   │   ├── labels/
+│   │   └── labels_TrainID30/       # c-30
+│   │
 │   ├── val/
 │   │   ├── images/                 # 2,000
-│   │   └── labels_TrainIds/        # c-19
+│   │   ├── labels_TrainIds/        # c-19
+│   │   └── labels_TrainID30/       # c-30
 │   │
 │   └── OV_30/
 │       ├── images/                 # 3,943

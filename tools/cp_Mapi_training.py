@@ -1,122 +1,116 @@
 # -*- coding: utf-8 -*-
-"""
-从 Mapillary training 数据集中提取包含指定类的所有样本（图像+标签）
-保存到目标 OV_31 目录。
-"""
 
-import os
+import argparse
 import shutil
 from pathlib import Path
+
 import numpy as np
-from tqdm import tqdm
 from PIL import Image
+from tqdm import tqdm
 
-# -------------------- 配置部分 --------------------
-SRC_LABEL_DIR = Path("/data/zd/data/Mapillary/mapillary/labels_TrainID30/")
-SRC_IMAGE_DIR = Path("/data/zd/data/Mapillary/mapillary/training/images")
-DST_LABEL_DIR = Path("/data/zd/data/Mapillary/mapillary/OV_30/labels")
-DST_IMAGE_DIR = Path("/data/zd/data/Mapillary/mapillary/OV_30/images")
-
-# Mapillary 31 类名称表
 OPEN30 = [
-    "road","sidewalk","building","wall","bridge","tunnel",
-    "traffic sign","traffic light","pole","fence","sky",
-    "vegetation","terrain","water","snow","sand",
-    "person","rider","car","truck","bus","train",
-    "bicycle","motorcycle","animal","signboard",
-    "railway","boat","chair","trash can"
+    "road", "sidewalk", "building", "wall", "bridge", "tunnel",
+    "traffic sign", "traffic light", "pole", "fence", "sky",
+    "vegetation", "terrain", "water", "snow", "sand",
+    "person", "rider", "car", "truck", "bus", "train",
+    "bicycle", "motorcycle", "animal", "signboard",
+    "railway", "boat", "chair", "trash can"
 ]
 NAME2ID = {name.lower(): i for i, name in enumerate(OPEN30)}
 
-# 需要筛选的类名  tunnel  boat animal chair
-TARGET_CLASSES = [
-     "railway",
-     "chair",  "tunnel",  "sand"
-]
-TARGET_IDS = [NAME2ID[name.lower()] for name in TARGET_CLASSES]
-
-# 支持的扩展名
 IMAGE_EXTS = (".png", ".jpg", ".jpeg", ".tif", ".tiff")
 LABEL_EXTS = (".png", ".tif", ".tiff")
+DEFAULT_TARGET_CLASSES = ["railway", "chair", "tunnel", "sand"]
 
 
-# -------------------- 工具函数 --------------------
-def find_image(base: str) -> str:
-    """根据标签文件名查找对应图像"""
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Build Mapillary OV_30 subset from training labels.")
+    parser.add_argument("mapillary_path", nargs="?", default="data/mapillary")
+    parser.add_argument(
+        "--target-classes", nargs="+", default=DEFAULT_TARGET_CLASSES)
+    parser.add_argument("--src-label-dir", default=None)
+    parser.add_argument("--src-image-dir", default=None)
+    parser.add_argument("--dst-label-dir", default=None)
+    parser.add_argument("--dst-image-dir", default=None)
+    return parser.parse_args()
+
+
+def find_image(src_image_dir, rel_label):
+    base = rel_label.with_suffix("")
     for ext in IMAGE_EXTS:
-        path = SRC_IMAGE_DIR / f"{base}{ext}"
+        path = src_image_dir / base.with_suffix(ext)
         if path.exists():
-            return str(path)
+            return path
     return None
 
 
-def find_label(base: str) -> str:
-    """查找标签路径"""
-    for ext in LABEL_EXTS:
-        path = SRC_LABEL_DIR / f"{base}{ext}"
-        if path.exists():
-            return str(path)
-    return None
-
-
-def load_label_array(path: str) -> np.ndarray:
-    img = Image.open(path)
-    arr = np.array(img)
+def load_label_array(path):
+    arr = np.array(Image.open(path))
     if arr.ndim == 3:
         if arr.shape[2] == 1:
             arr = arr[..., 0]
-        elif arr.shape[2] == 3:
-            # 如果三通道一致则取一通道
-            if np.array_equal(arr[..., 0], arr[..., 1]) and np.array_equal(arr[..., 1], arr[..., 2]):
-                arr = arr[..., 0]
-            else:
-                raise ValueError(f"标签文件 {path} 看起来是彩色标签，请先转为 TrainID。")
+        elif np.array_equal(arr[..., 0], arr[..., 1]) and np.array_equal(
+                arr[..., 1], arr[..., 2]):
+            arr = arr[..., 0]
+        else:
+            raise ValueError(f"Label appears to be RGB, not TrainID: {path}")
     return arr.astype(np.int32, copy=False)
 
 
-def ensure_dir(path: Path):
-    os.makedirs(path, exist_ok=True)
-
-
-# -------------------- 主逻辑 --------------------
 def main():
-    ensure_dir(DST_LABEL_DIR)
-    ensure_dir(DST_IMAGE_DIR)
+    args = parse_args()
+    root = Path(args.mapillary_path)
+    src_label_dir = Path(args.src_label_dir) if args.src_label_dir else (
+        root / "training" / "labels_TrainID30")
+    src_image_dir = Path(args.src_image_dir) if args.src_image_dir else (
+        root / "training" / "images")
+    dst_label_dir = Path(args.dst_label_dir) if args.dst_label_dir else (
+        root / "OV_30" / "labels")
+    dst_image_dir = Path(args.dst_image_dir) if args.dst_image_dir else (
+        root / "OV_30" / "images")
 
-    all_labels = [f for f in os.listdir(SRC_LABEL_DIR) if f.lower().endswith(LABEL_EXTS)]
-    all_labels.sort()
+    target_ids = [NAME2ID[name.lower()] for name in args.target_classes]
+    dst_label_dir.mkdir(parents=True, exist_ok=True)
+    dst_image_dir.mkdir(parents=True, exist_ok=True)
+
+    labels = sorted(
+        p for p in src_label_dir.rglob("*")
+        if p.is_file() and p.suffix.lower() in LABEL_EXTS
+        and p.name != "open30_classes.txt")
+    if not labels:
+        raise FileNotFoundError(f"No labels found in {src_label_dir}")
 
     selected = []
-
-    print(f"[INFO] 共检测 {len(all_labels)} 张标签，开始筛选包含目标类的样本...")
-    for fname in tqdm(all_labels):
-        base = os.path.splitext(fname)[0]
-        label_path = SRC_LABEL_DIR / fname
+    print(f"[INFO] Checking {len(labels)} Mapillary training labels...")
+    for label_path in tqdm(labels):
+        rel_label = label_path.relative_to(src_label_dir)
         try:
             arr = load_label_array(label_path)
-        except Exception as e:
-            tqdm.write(f"[WARN] 跳过 {fname}: {e}")
+        except Exception as exc:
+            tqdm.write(f"[WARN] Skip {label_path}: {exc}")
             continue
 
-        # 如果该标签中包含任何目标类ID，则拷贝
-        if np.any(np.isin(arr, TARGET_IDS)):
-            img_path = find_image(base)
-            if img_path is None:
-                tqdm.write(f"[WARN] 未找到图像: {base}")
-                continue
+        if not np.any(np.isin(arr, target_ids)):
+            continue
 
-            # 拷贝
-            dst_lab = DST_LABEL_DIR / fname
-            dst_img = DST_IMAGE_DIR / Path(img_path).name
-            shutil.copy2(label_path, dst_lab)
-            shutil.copy2(img_path, dst_img)
-            selected.append(base)
+        img_path = find_image(src_image_dir, rel_label)
+        if img_path is None:
+            tqdm.write(f"[WARN] Missing image for label: {rel_label}")
+            continue
 
-    print(f"\n✅ 共提取 {len(selected)} 张样本")
-    print(f"保存路径：\n  Images → {DST_IMAGE_DIR}\n  Labels → {DST_LABEL_DIR}")
-    print(f"包含的目标类：{', '.join(TARGET_CLASSES)}")
+        dst_lab = dst_label_dir / rel_label
+        dst_img = dst_image_dir / img_path.relative_to(src_image_dir)
+        dst_lab.parent.mkdir(parents=True, exist_ok=True)
+        dst_img.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(label_path, dst_lab)
+        shutil.copy2(img_path, dst_img)
+        selected.append(str(rel_label.with_suffix("")))
 
-# nohup python cp_training_OV31.py  >  logs/cp_training_OV31.log 2>&1 &
+    print(f"[DONE] Selected {len(selected)} samples.")
+    print(f"       Images: {dst_image_dir}")
+    print(f"       Labels: {dst_label_dir}")
+    print(f"       Target classes: {', '.join(args.target_classes)}")
 
 
 if __name__ == "__main__":
