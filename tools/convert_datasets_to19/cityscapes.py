@@ -55,6 +55,9 @@ def parse_args():
     parser.add_argument('cityscapes_path', help='cityscapes data path')
     parser.add_argument('--gt-dir', default='gtFine', type=str)
     parser.add_argument('--gt19-dir', default='gtFine_19', type=str)
+    parser.add_argument(
+        '--splits', nargs='+', default=['train', 'val', 'test'],
+        help='Cityscapes splits to convert, e.g. train val.')
     parser.add_argument('-o', '--out-dir', help='output path')
     parser.add_argument(
         '--nproc', default=1, type=int, help='number of process')
@@ -119,9 +122,15 @@ def main():
     out_gt_dir = out_dir / args.gt19_dir
     out_gt_dir.mkdir(parents=True, exist_ok=True)
 
-    poly_files = [str(p) for p in gt_dir.rglob('*_polygons.json')]
+    poly_files = []
+    for split in args.splits:
+        split_dir = gt_dir / split
+        if split_dir.is_dir():
+            poly_files.extend(str(p) for p in split_dir.rglob('*_polygons.json'))
     if not poly_files:
-        raise FileNotFoundError(f'No Cityscapes polygon JSON files found in {gt_dir}')
+        raise FileNotFoundError(
+            f'No Cityscapes polygon JSON files found in {gt_dir} '
+            f'for splits: {args.splits}')
 
     only_postprocessing = False
     worker = partial(convert_json_to_label, gt_dir=gt_dir,
@@ -134,9 +143,7 @@ def main():
 
     save_class_stats(out_dir, sample_class_stats)
 
-    split_names = ['train', 'val', 'test']
-
-    for split in split_names:
+    for split in args.splits:
         filenames = []
         split_dir = gt_dir / split
         if not split_dir.is_dir():

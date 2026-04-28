@@ -66,7 +66,7 @@ pip install -e .
 ## 📥 Dataset Download
 
 **Cityscapes**  
-Please download `leftImg8bit_trainvaltest.zip` and `gt_trainvaltest.zip` from [here](https://www.cityscapes-dataset.com/downloads/) and extract them to `data/cityscapes`.
+Please download `leftImg8bit_trainvaltest.zip` and `gt_trainvaltest.zip` from [here](https://www.cityscapes-dataset.com/downloads/) and extract them to `data/cityscape`.
 
 **GTA5**  
 Please download all GTA5 image and label packages from [here](https://download.visinf.tu-darmstadt.de/data/from_games/)  and extract them to `data/GTA5/GTAV`.
@@ -96,11 +96,14 @@ and extract them to `data/ROADWork_Data`.
 
 ```bash
 python tools/convert_datasets_to19/gta.py data/GTA5/GTAV
-python tools/convert_datasets_to19/cityscapes.py data/cityscape
+python tools/convert_datasets_to19/cityscapes.py data/cityscape --splits train
+python tools/convert_datasets_to19/cityscapes19_val.py data/cityscape
 python tools/convert_datasets_to19/mapillary.py data/mapillary
 python tools/convert_datasets_ovss/prepare_cityscapes_seen_7.py data/cityscape
 python tools/convert_datasets_ovss/process_GTA_19_to_7.py data/GTA5/GTAV
 ```
+
+`cityscapes19_val` evaluation uses `leftImg8bit/val` and `gtFine_19/val`, so make sure the validation split is converted before running CS-7 / CS-19 evaluation.
 
 ####  large-Vocabulary (30 / 41 / 58 / 10)
 
@@ -122,11 +125,13 @@ data/
 │
 ├── cityscape/
 │   ├── leftImg8bit/
-│   │   └── train/                  # 2,975
+│   │   ├── train/                  # 2,975
+│   │   └── val/                    # 500
 │   ├── gtFine_7/
 │   │   └── train/                  # c-7
 │   └── gtFine_19/
-│       └── train/                  # c-19
+│       ├── train/                  # c-19
+│       └── val/                    # c-19, used by cityscapes19_val
 │
 ├── BDD/
 │   ├── bdd100k/
