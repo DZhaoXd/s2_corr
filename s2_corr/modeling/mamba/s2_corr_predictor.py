@@ -55,9 +55,9 @@ class S2_CorrPredictor(nn.Module):
 
         # use class_texts in train_forward, and test_class_texts in test_forward
         with open(train_class_json, 'r') as f_in:
-            self.class_texts = json.load(f_in)
+            self.class_texts = self.normalize_class_texts(json.load(f_in))
         with open(test_class_json, 'r') as f_in:
-            self.test_class_texts = json.load(f_in)
+            self.test_class_texts = self.normalize_class_texts(json.load(f_in))
         assert self.class_texts != None
         if self.test_class_texts == None:
             self.test_class_texts = self.class_texts
@@ -136,7 +136,7 @@ class S2_CorrPredictor(nn.Module):
 
         self.Corr = Corr
         self.tokens = None
-        self.cache = None
+        self.cache = {}
 
 
     @classmethod
@@ -171,10 +171,75 @@ class S2_CorrPredictor(nn.Module):
         ret["gamma"] = cfg.MODEL.SEM_SEG_HEAD.GAMMA
         return ret
 
+    @staticmethod
+    def normalize_class_texts(class_texts):
+        if class_texts is None:
+            return None
+        if isinstance(class_texts, dict):
+            normalized = []
+            for class_name, aliases in class_texts.items():
+                if isinstance(aliases, str):
+                    aliases = [aliases]
+                elif not aliases:
+                    aliases = [class_name]
+                normalized.append(aliases)
+            return normalized
+        return class_texts
+
+    @staticmethod
+    def class_aliases(classname):
+        if isinstance(classname, (list, tuple)):
+            aliases = []
+            for alias in classname:
+                alias = str(alias)
+                aliases.extend(alias.split(', ') if ', ' in alias else [alias])
+            return aliases
+        classname = str(classname)
+        return classname.split(', ') if ', ' in classname else [classname]
+
+    @staticmethod
+    def inference_aliases(classname):
+        if isinstance(classname, (list, tuple)):
+            return [str(alias) for alias in classname]
+        classname = str(classname)
+        return [classname.split(', ')[0] if ', ' in classname else classname]
+
+    @staticmethod
+    def has_alias_ensemble(classnames):
+        return any(isinstance(classname, (list, tuple)) for classname in classnames)
+
+    @staticmethod
+    def alias_vocab_variants(classnames):
+        num_variants = max(
+            len(classname) if isinstance(classname, (list, tuple)) and len(classname) > 0 else 1
+            for classname in classnames
+        )
+        variants = []
+        for idx in range(num_variants):
+            variant = []
+            for classname in classnames:
+                if isinstance(classname, (list, tuple)) and len(classname) > 0:
+                    variant.append(str(classname[idx]) if idx < len(classname) else str(classname[0]))
+                else:
+                    variant.append(str(classname))
+            variants.append(variant)
+        return variants
+
     def forward(self, x, vis_guidance, prompt=None, gt_cls=None, gt_mask=None):
         vis = [vis_guidance[k] for k in vis_guidance.keys()][::-1]
         text = self.class_texts if self.training else self.test_class_texts
         text = [text[c] for c in gt_cls] if gt_cls is not None else text
+
+        if not self.training and gt_cls is None and self.has_alias_ensemble(text):
+            outputs = []
+            for idx, text_variant in enumerate(self.alias_vocab_variants(text)):
+                text_embeds = self.get_text_embeds(
+                    text_variant, self.prompt_templates, self.clip_model, prompt, cache_key=f"alias_{idx}"
+                )
+                text_embeds = text_embeds.repeat(x.shape[0], 1, 1, 1)
+                outputs.append(self.Corr(x, text_embeds, vis))
+            return torch.stack(outputs, dim=0).mean(dim=0)
+
         text = self.get_text_embeds(text, self.prompt_templates, self.clip_model, prompt)
         text = text.repeat(x.shape[0], 1, 1, 1)
 
@@ -185,62 +250,48 @@ class S2_CorrPredictor(nn.Module):
     def class_embeddings(self, classnames, templates, clip_model):
         zeroshot_weights = []
         for classname in classnames:
-            if ', ' in classname:
-                classname_splits = classname.split(', ')
-                texts = []
-                for template in templates:
-                    for cls_split in classname_splits:
-                        texts.append(template.format(cls_split))
-            else:
-                texts = [template.format(classname) for template in templates]  # format with class
+            aliases = self.class_aliases(classname)
+            texts = [template.format(alias) for template in templates for alias in aliases]
             if self.tokenizer is not None:
                 texts = self.tokenizer(texts).cuda()
             else: 
                 texts = clip.tokenize(texts).cuda()
             class_embeddings = clip_model.encode_text(texts)
             class_embeddings = class_embeddings / class_embeddings.norm(dim=-1, keepdim=True)
-            if len(templates) != class_embeddings.shape[0]:
-                class_embeddings = class_embeddings.reshape(len(templates), -1, class_embeddings.shape[-1]).mean(dim=1)
-                class_embeddings = class_embeddings / class_embeddings.norm(dim=-1, keepdim=True)
+            class_embeddings = class_embeddings.reshape(len(templates), len(aliases), class_embeddings.shape[-1]).mean(dim=1)
+            class_embeddings = class_embeddings / class_embeddings.norm(dim=-1, keepdim=True)
             class_embedding = class_embeddings
             zeroshot_weights.append(class_embedding)
         zeroshot_weights = torch.stack(zeroshot_weights, dim=1).cuda()
         return zeroshot_weights
 
-    def get_text_embeds(self, classnames, templates, clip_model, prompt=None):
+    def get_text_embeds(self, classnames, templates, clip_model, prompt=None, cache_key="default"):
         #### Fix bugs
-        if self.cache is not None and not self.training:
-            return self.cache
+        if not self.training and cache_key in self.cache:
+            return self.cache[cache_key]
 
         tokens_list = []
         for classname in classnames:
-            if ', ' in classname:
-                classname_splits = classname.split(', ')
-                texts = [template.format(classname_splits[0]) for template in templates]
-            else:
-                texts = [template.format(classname) for template in templates]
+            aliases = self.inference_aliases(classname)
+            texts = [template.format(alias) for template in templates for alias in aliases]
 
             if self.tokenizer is not None:
                 tok = self.tokenizer(texts).cuda()
             else:
                 tok = clip.tokenize(texts).cuda()
-            tokens_list.append(tok)  # [M, ctx_len]
+            tokens_list.append(tok)  # [M * num_aliases, ctx_len]
 
-        #  [N, M, ctx_len]，reshape [N*M, ctx_len]
-        tokens = torch.stack(tokens_list, dim=0)  # [N, M, ctx_len]
-        N, M, L = tokens.shape
-        tokens_flat = tokens.view(N * M, L)
+        tokens = torch.stack(tokens_list, dim=0)  # [N, M * num_aliases, ctx_len]
+        N, P, L = tokens.shape
+        tokens_flat = tokens.view(N * P, L)
 
-        # 3)  [N*M, D]  → reshape [N, M, D]
-        class_embeddings = clip_model.encode_text(tokens_flat, prompt)  # [N*M, D]
+        class_embeddings = clip_model.encode_text(tokens_flat, prompt)  # [N*P, D]
         class_embeddings = class_embeddings / class_embeddings.norm(dim=-1, keepdim=True)
         D = class_embeddings.shape[-1]
-        class_embeddings = class_embeddings.view(N, M, D).contiguous()  # [N, M, D]
+        class_embeddings = class_embeddings.view(N, P, D).contiguous()  # [N, P, D]
 
         # 4)  [N, M, D]
         if not self.training:
-            self.cache = class_embeddings
+            self.cache[cache_key] = class_embeddings
 
         return class_embeddings
-
-

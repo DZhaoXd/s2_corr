@@ -1,12 +1,12 @@
 {
     "road": ["road", "street", "driving road"],
-    "sidewalk": ["sidewalk", "pavement", "walkway"],
-    "barrier": ["road barrier", "traffic barrier", "concrete barrier"],
-    "police vehicle": ["police car", "police vehicle", "law enforcement vehicle"],
-    "work vehicle": ["work vehicle", "construction truck", "utility vehicle"],
+    "sidewalk": ["sidewalk", "pedestrian sidewalk", "walkway"],
+    "barrier": ["barrier", "road barrier", "traffic barrier", "concrete barrier"],
+    "police vehicle": ["police vehicle", "police car", "law enforcement vehicle"],
+    "work vehicle": ["work vehicle", "road work vehicle", "construction truck"],
     "police officer": ["police officer", "law enforcement officer", "policeman"],
-    "worker": ["construction worker", "road worker", "worker wearing safety vest"],
-    "cone": ["traffic cone", "orange cone", "safety cone"],
-    "arrow board": ["traffic arrow board", "electronic road sign", "arrow sign"],
-    "ttc sign": ["traffic sign", "warning sign", "road sign"]
+    "worker": ["worker", "construction worker", "road worker", "worker wearing safety vest"],
+    "cone": ["cone", "traffic cone", "orange cone", "safety cone"],
+    "arrow board": ["arrow board", "flashing arrow board", "traffic control arrow board", "portable arrow board"],
+    "ttc sign": ["ttc sign", "temporary traffic control sign", "road work sign", "construction warning sign"]
 }

@@ -113,6 +113,7 @@ python tools/cp_Mapi_training.py data/mapillary
 python tools/process_RW_10.py
 ```
 
+For RW10 multi-vocabulary evaluation, replace `datasets/roadwork_10.json` with `datasets/roadwork_test.json` in `MODEL.SEM_SEG_HEAD.TEST_CLASS_JSON`.
 
 Folder structure under `data/` should look like:
 ```
