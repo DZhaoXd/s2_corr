@@ -113,8 +113,6 @@ python tools/cp_Mapi_training.py data/mapillary
 python tools/process_RW_10.py
 ```
 
-For RW10 multi-vocabulary evaluation, replace `datasets/roadwork_10.json` with `datasets/roadwork_test.json` in `MODEL.SEM_SEG_HEAD.TEST_CLASS_JSON`.
-
 Folder structure under `data/` should look like:
 ```
 data/
@@ -241,6 +239,8 @@ CUDA_VISIBLE_DEVICES=0 nohup bash run.sh configs/gta5_seen7_catseg_vitl.yaml 1 o
 CUDA_VISIBLE_DEVICES=0 nohup bash run.sh configs/cs19_catseg_vitl.yaml 1 outputs/cs19_eva_L14_r448 \
   > logs/cs19_eva_L14_r448.log 2>&1 &
 ```
+
+For RW10 multi-vocabulary evaluation, replace `datasets/roadwork_10.json` with `datasets/roadwork_test.json` in `MODEL.SEM_SEG_HEAD.TEST_CLASS_JSON`.
 
 ---
 
