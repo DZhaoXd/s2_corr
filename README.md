@@ -265,14 +265,13 @@ CUDA_VISIBLE_DEVICES=0 nohup sh demo/vis_atten.sh configs/cs7_catseg.yaml 1 outp
 ## 📚 Citation
 
 ```bibtex
-@misc{zhao2026OVDG,
-      title={Open-Vocabulary Domain Generalization in Urban-Scene Segmentation}, 
-      author={Dong Zhao and Qi Zang and Nan Pu and Wenjing Li and Nicu Sebe and Zhun Zhong},
-      year={2026},
-      eprint={2602.18853},
-      archivePrefix={arXiv},
-      primaryClass={cs.CV},
-      url={https://arxiv.org/abs/2602.18853}, 
+@InProceedings{Zhao_2026_CVPR,
+    author    = {Zhao, Dong and Zang, Qi and Pu, Nan and Li, Wenjing and Sebe, Nicu and Zhong, Zhun},
+    title     = {Open-Vocabulary Domain Generalization in Urban-Scene Segmentation},
+    booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+    month     = {June},
+    year      = {2026},
+    pages     = {20388-20398}
 }
 ```
 
