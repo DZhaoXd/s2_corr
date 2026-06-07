@@ -40,6 +40,7 @@ S²-Corr introduces a state-space powered correlation refinement module that sta
 ---
 
 
+⭐ If you find this repository helpful, please consider giving it a star. Thanks!
 
 ## 📦 Installation
 
