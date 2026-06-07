@@ -226,15 +226,6 @@ CUDA_VISIBLE_DEVICES=0 nohup bash run.sh configs/gta5_seen7_catseg.yaml 1 output
 
 **ViT-L/14**
 
-As discussed in the CLIPSelf : Vision Transformer Distills Itself for Open-Vocabulary Dense Prediction [ICLR'24] paper, the spatial representations learned by VLMs are generally less suitable for dense prediction than those learned by models such as DINOv2. Therefore, to achieve better performance on the 19 seen categories on Table 9, it is helpful to first warm up the VLM representations and then further fine-tune the model using our training scripts.
-
-I have provided a warm-up checkpoint for ViT-L, trained using the official CLIPSelf code on GTA dataset:
-https://drive.google.com/file/d/1PQzV4d_OuLPt46z96bU-kYQAK68X8vEY/view?usp=drive_link
-
-You can use this checkpoint, warmup_GTA_eva_l14_336_40460594_epoch_10.pt, to replace the original pretrained checkpoint specified by:
-
-CACHE_DIR: "./pretrain/warmup_GTA_eva_l14_336_40460594_epoch_10.pt"
-
 ```bash
 CUDA_VISIBLE_DEVICES=0 nohup bash run.sh configs/gta5_seen7_catseg_vitl.yaml 1 outputs/gta_seen7_eva_L14_r448 \
   > logs/gta_seen7_eva_L14_r448.log 2>&1 &
@@ -249,7 +240,20 @@ CUDA_VISIBLE_DEVICES=0 nohup bash run.sh configs/cs19_catseg_vitl.yaml 1 outputs
   > logs/cs19_eva_L14_r448.log 2>&1 &
 ```
 
+### 🔹 RW-10 (evaluation)
+
 For RW10 multi-vocabulary evaluation, replace `datasets/roadwork_10.json` with `datasets/roadwork_test.json` in `MODEL.SEM_SEG_HEAD.TEST_CLASS_JSON`.
+
+### 🔹 GTA-19 (19 Classes)
+
+As discussed in the CLIPSelf : Vision Transformer Distills Itself for Open-Vocabulary Dense Prediction [ICLR'24] paper, the spatial representations learned by VLMs are generally less suitable for dense prediction than those learned by models such as DINOv2. Therefore, to achieve better performance on the 19 seen categories on Table 9, it is helpful to first warm up the VLM representations and then further fine-tune the model using our training scripts.
+
+I have provided a warm-up checkpoint for ViT-L, trained using the official CLIPSelf code on GTA dataset:
+https://drive.google.com/file/d/1PQzV4d_OuLPt46z96bU-kYQAK68X8vEY/view?usp=drive_link
+
+You can use this checkpoint, warmup_GTA_eva_l14_336_40460594_epoch_10.pt, to replace the original pretrained checkpoint specified by:
+
+CACHE_DIR: "./pretrain/warmup_GTA_eva_l14_336_40460594_epoch_10.pt"
 
 ---
 
