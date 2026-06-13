@@ -258,6 +258,15 @@ CACHE_DIR: "./pretrain/warmup_GTA_eva_l14_336_40460594_epoch_10.pt"
 
 ---
 
+
+### Trained Checkpoints
+
+We provide the trained checkpoints for the EVA02-L/14 backbone:
+
+- **GTA-7 trained checkpoint**: [Google Drive](https://drive.google.com/file/d/1OKfBofUWeIe7ChqRBkVFb2Z-waKqVFdA/view?usp=sharing)
+- **CS-7 trained checkpoint**: [Google Drive](https://drive.google.com/file/d/1O5U0RVfuz_Gx3kNPXJXISY05cGvbB1Fo/view?usp=sharing)
+
+
 ## 👀 Visualization
 
 ### 🎨 Segmentation Masks
